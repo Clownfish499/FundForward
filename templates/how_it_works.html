@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}How It Works — FundForward{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width: 920px;">
+    <h1 style="font-size: 2.2rem; color: var(--navy); margin-bottom: 0.75rem;">How FundForward Works</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2.5rem;">
+      From campaign submission to ML risk scoring and simulated donor support.
+    </p>
+
+    <div class="grid-2" style="margin-bottom: 2rem;">
+      <div class="card-static">
+        <span class="category-pill">For Creators</span>
+        <h3 class="card-title">1. Create &amp; Document</h3>
+        <p class="card-text" style="margin-bottom: 0;">Register an account, define your fundraising goal, write a detailed narrative, and upload supporting verification documents.</p>
+      </div>
+      <div class="card-static">
+        <span class="category-pill">ML Engine</span>
+        <h3 class="card-title">2. Automated Fraud Screening</h3>
+        <p class="card-text" style="margin-bottom: 0;">Our Scikit-learn Random Forest classifier extracts 9 features (target, description length, documents, account age, completeness, urgency keywords) and assigns a 0–100 risk score.</p>
+      </div>
+      <div class="card-static">
+        <span class="category-pill">Admin Review</span>
+        <h3 class="card-title">3. Verification &amp; Approval</h3>
+        <p class="card-text" style="margin-bottom: 0;">Administrators review the score and explainable reasons, then approve, reject, or request additional documentation.</p>
+      </div>
+      <div class="card-static">
+        <span class="category-pill">For Donors</span>
+        <h3 class="card-title">4. Simulated Support</h3>
+        <p class="card-text" style="margin-bottom: 0;">Supporters browse verified campaigns, select preset or custom amounts, leave encouragement messages, and receive a simulated payment receipt.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

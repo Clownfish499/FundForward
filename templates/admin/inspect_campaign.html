@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Inspect Campaign #{{ campaign.id }} — FundForward Admin{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div style="margin-bottom: 1.25rem; display: flex; justify-content: space-between; align-items: center;">
+      <a href="{{ url_for('admin.fraud_monitoring') }}">&larr; Back to Fraud Monitoring</a>
+      <form method="POST" action="{{ url_for('admin.campaign_action', campaign_id=campaign.id) }}">
+        <input type="hidden" name="action" value="rerun_ml" />
+        <button type="submit" class="btn btn-outline btn-sm">Re-run ML Fraud Analysis</button>
+      </form>
+    </div>
+
+    <div class="grid-3" style="align-items: start;">
+      <div style="grid-column: span 2;">
+        <div class="card-static" style="margin-bottom: 1.5rem;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+            <span class="category-pill" style="margin-bottom: 0;">{{ campaign.category }}</span>
+            <span class="badge badge-{{ campaign.status }}">{{ campaign.status | replace('_', ' ') | title }}</span>
+          </div>
+          <h1 style="font-size: 1.7rem; color: var(--navy); margin-bottom: 0.5rem;">{{ campaign.title }}</h1>
+          <p style="color: var(--text-muted); margin-bottom: 1rem;">
+            Creator: <strong>{{ campaign.creator_name }}</strong> ({{ campaign.creator_email }}) &middot;
+            Account Age: <strong>{{ campaign.creator_account_age_days }} days</strong> &middot;
+            Prior Flags: <strong>{{ campaign.creator_suspicious_count }}</strong>
+          </p>
+          <p style="margin-bottom: 1rem;"><strong>Goal:</strong> {{ campaign.goal_amount | currency }} &middot; <strong>Duration:</strong> {{ campaign.duration_days }} days &middot; <strong>Location:</strong> {{ campaign.location or 'Not provided' }}</p>
+          <h4 style="color: var(--navy); margin-bottom: 0.4rem;">Full Description</h4>
+          <p style="white-space: pre-line; color: var(--text); margin-bottom: 1rem;">{{ campaign.description }}</p>
+          <p>
+            <strong>Supporting Document:</strong>
+            {% if campaign.document_filename %}
+              <a href="{{ url_for('public.uploaded_file', folder='documents', filename=campaign.document_filename) }}" target="_blank">{{ campaign.document_filename }}</a>
+            {% else %}
+              <span style="color: var(--danger);">None uploaded</span>
+            {% endif %}
+          </p>
+        </div>
+
+        <div class="card-static">
+          <h3 class="card-title" style="margin-bottom: 1rem;">Admin Verification History</h3>
+          {% for rev in reviews %}
+            <div style="padding: 0.75rem 0; border-bottom: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between;">
+                <strong>{{ rev.admin_name }}</strong>
+                <span class="badge badge-{{ rev.action }}">{{ rev.action | replace('_', ' ') | title }}</span>
+              </div>
+              <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;">{{ rev.notes }} ({{ rev.created_at }})</p>
+            </div>
+          {% else %}
+            <p class="card-text" style="margin-bottom: 0;">No admin review actions recorded yet.</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <div class="card-static" style="margin-bottom: 1.5rem;">
+          <h3 class="card-title">ML Fraud Risk Breakdown</h3>
+          {% if campaign.risk_score is not none %}
+            {% set risk_cls = 'low' if campaign.risk_category == 'Low Risk' else ('medium' if campaign.risk_category == 'Medium Risk' else 'high') %}
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 1rem 0;">
+              <span class="badge badge-{{ risk_cls }}" style="font-size: 0.88rem;">{{ campaign.risk_category }}</span>
+              <strong style="font-size: 1.6rem; color: var(--navy);">{{ campaign.risk_score }} / 100</strong>
+            </div>
+            <h4 style="font-size: 0.9rem; color: var(--navy); margin-bottom: 0.4rem;">Explainable Risk Factors</h4>
+            <ul style="padding-left: 1.1rem; font-size: 0.86rem; color: var(--text-muted); margin-bottom: 1rem;">
+              {% for r in reasons %}
+                <li style="margin-bottom: 0.35rem;">{{ r }}</li>
+              {% endfor %}
+            </ul>
+            {% if features %}
+              <h4 style="font-size: 0.9rem; color: var(--navy); margin-bottom: 0.4rem;">Extracted Feature Vector</h4>
+              <div style="font-size: 0.82rem; color: var(--text-muted); background: var(--bg-subtle); padding: 0.75rem; border-radius: 8px;">
+                {% for k, v in features.items() %}
+                  <div><strong>{{ k }}:</strong> {{ v }}</div>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% endif %}
+        </div>
+
+        <div class="card-static">
+          <h3 class="card-title" style="margin-bottom: 1rem;">Verification Decision</h3>
+          <form method="POST" action="{{ url_for('admin.campaign_action', campaign_id=campaign.id) }}" data-loading="true">
+            <div class="form-group">
+              <label class="form-label" for="notes">Admin Review Notes</label>
+              <textarea id="notes" name="notes" class="form-control" rows="3" placeholder="Reason for approval, rejection, or info request..."></textarea>
+            </div>
+            <div style="display: grid; gap: 0.6rem;">
+              <button type="submit" name="action" value="approve" class="btn btn-teal">Approve Campaign</button>
+              <button type="submit" name="action" value="request_info" class="btn btn-outline">Request Additional Info</button>
+              <button type="submit" name="action" value="reject" class="btn btn-danger">Reject Campaign</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}Create Campaign — FundForward{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-card form-card-wide">
+    <h1 style="font-size: 1.7rem; color: var(--navy); margin-bottom: 0.35rem;">Launch a Fundraising Campaign</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Every submission is automatically evaluated by our Scikit-learn fraud detection model before admin review.
+    </p>
+
+    <form method="POST" action="{{ url_for('campaign.create_campaign_view') }}" enctype="multipart/form-data" data-loading="true">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="title">Campaign Title *</label>
+          <input type="text" id="title" name="title" class="form-control" value="{{ form_data.get('title', '') }}" required minlength="5" maxlength="140" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="category">Category *</label>
+          <select id="category" name="category" class="form-control" required>
+            <option value="">Select Category...</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if form_data.get('category') == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="short_summary">Short Summary *</label>
+        <input type="text" id="short_summary" name="short_summary" class="form-control" value="{{ form_data.get('short_summary', '') }}" required minlength="10" maxlength="250" placeholder="One-sentence summary of your goal..." />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Detailed Campaign Description *</label>
+        <textarea id="description" name="description" class="form-control" rows="5" required minlength="30" placeholder="Explain who benefits, how funds will be used, and timeline...">{{ form_data.get('description', '') }}</textarea>
+        <div class="form-hint">Detailed, transparent descriptions improve donor trust and lower ML risk scores.</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="goal_amount">Fundraising Goal (USD) *</label>
+          <input type="number" id="goal_amount" name="goal_amount" class="form-control" value="{{ form_data.get('goal_amount', '') }}" min="50" max="1000000" step="1" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="duration_days">Duration (Days) *</label>
+          <input type="number" id="duration_days" name="duration_days" class="form-control" value="{{ form_data.get('duration_days', 30) }}" min="5" max="180" required />
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="form-group">
+          <label class="form-label" for="location">Location</label>
+          <input type="text" id="location" name="location" class="form-control" value="{{ form_data.get('location', '') }}" placeholder="City, State" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="beneficiary_name">Beneficiary / Organization</label>
+          <input type="text" id="beneficiary_name" name="beneficiary_name" class="form-control" value="{{ form_data.get('beneficiary_name', '') }}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contact_phone">Contact Phone</label>
+          <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="{{ form_data.get('contact_phone', '') }}" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="image">Campaign Cover Image (PNG, JPG, WEBP)</label>
+          <input type="file" id="image" name="image" class="form-control" accept=".png,.jpg,.jpeg,.webp" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="document">Supporting Document (PDF, DOC, TXT, Image)</label>
+          <input type="file" id="document" name="document" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt" />
+          <div class="form-hint">Max 5 MB. Attaching verification documents lowers risk score.</div>
+        </div>
+      </div>
+
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" data-loading-text="Submitting & Running ML Analysis...">
+        Submit Campaign for Verification
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

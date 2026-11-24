@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block title %}Donation Monitoring — FundForward Admin{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2>Donation Monitoring</h2>
+        <p>All simulated donor transactions recorded in SQLite.</p>
+      </div>
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-outline btn-sm">&larr; Back to Dashboard</a>
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Reference</th>
+            <th>Donor</th>
+            <th>Campaign</th>
+            <th>Amount</th>
+            <th>Method</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for d in donations %}
+            <tr>
+              <td><code>{{ d.payment_reference }}</code></td>
+              <td>{{ d.donor_name }}<br /><small style="color: var(--text-muted);">{{ d.donor_email }}</small></td>
+              <td><a href="{{ url_for('admin.inspect_campaign', campaign_id=d.campaign_id) }}">{{ d.campaign_title }}</a></td>
+              <td><strong>{{ d.amount | currency }}</strong></td>
+              <td>{{ d.payment_method }}</td>
+              <td>{{ d.created_at }}</td>
+            </tr>
+          {% else %}
+            <tr><td colspan="6" style="text-align: center; padding: 2rem;">No donations recorded.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}

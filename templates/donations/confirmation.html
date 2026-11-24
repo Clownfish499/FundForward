@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}Donation Confirmed — FundForward{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-card" style="text-align: center;">
+    <div class="badge badge-low" style="font-size: 0.9rem; padding: 0.4rem 1rem; margin-bottom: 1rem;">Simulated Payment Confirmed</div>
+    <h1 style="font-size: 1.7rem; color: var(--navy); margin-bottom: 0.5rem;">Thank you, {{ donation.donor_name }}!</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Your simulated contribution of <strong>{{ donation.amount | currency }}</strong> to <strong>{{ donation.campaign_title }}</strong> has been recorded.
+    </p>
+
+    <div class="card-static" style="text-align: left; background: var(--bg-subtle); margin-bottom: 1.5rem;">
+      <p style="margin-bottom: 0.4rem;"><strong>Reference ID:</strong> <code>{{ donation.payment_reference }}</code></p>
+      <p style="margin-bottom: 0.4rem;"><strong>Payment Method:</strong> {{ donation.payment_method }}</p>
+      <p style="margin-bottom: 0.4rem;"><strong>Date:</strong> {{ donation.created_at }}</p>
+      <p style="margin-bottom: 0;"><strong>Status:</strong> Simulated (No real money transferred)</p>
+    </div>
+
+    <div style="display: flex; gap: 0.75rem; justify-content: center;">
+      <a href="{{ url_for('public.campaign_detail', campaign_id=donation.campaign_id) }}" class="btn btn-primary">Back to Campaign</a>
+      <a href="{{ url_for('public.explore') }}" class="btn btn-outline">Explore More</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

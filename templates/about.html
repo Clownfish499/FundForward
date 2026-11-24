@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}About FundForward — ML-Assisted Crowdfunding{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container" style="max-width: 860px;">
+    <h1 style="font-size: 2.2rem; color: var(--navy); margin-bottom: 1rem;">About FundForward</h1>
+    <p style="font-size: 1.05rem; color: var(--text-muted); margin-bottom: 2rem;">
+      FundForward is an academic software engineering project demonstrating how modern full-stack web platforms can integrate interpretable Machine Learning to strengthen trust in online crowdfunding.
+    </p>
+
+    <div class="grid-2" style="margin-bottom: 2rem;">
+      <div class="card-static">
+        <h3 class="card-title">Platform Mission</h3>
+        <p class="card-text" style="margin-bottom: 0;">
+          Empower individuals, educators, clinics, and community groups to raise support transparently while giving platform reviewers automated risk triage.
+        </p>
+      </div>
+      <div class="card-static">
+        <h3 class="card-title">ML Transparency &amp; Ethics</h3>
+        <p class="card-text" style="margin-bottom: 0;">
+          Our Random Forest model surfaces explainable risk factors (0–100 score) rather than black-box rejections. Human administrators always make the final decision.
+        </p>
+      </div>
+    </div>
+
+    <div class="disclosure-box">
+      <strong>Academic &amp; Synthetic Data Disclosure:</strong> The fraud detection model is trained on a synthetic demonstration dataset (1,200 simulated campaign records). Risk scores (0–30 Low, 31–60 Medium, 61–100 High) are demonstration thresholds and probabilistic indicators—never legal proof of fraud. All donations on this platform are simulated and no real money is transferred.
+    </div>
+  </div>
+</section>
+{% endblock %}

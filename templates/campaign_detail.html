@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% block title %}{{ campaign.title }} — FundForward{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div style="margin-bottom: 1.25rem;">
+      <a href="{{ url_for('public.explore') }}">&larr; Back to Explore</a>
+    </div>
+
+    
+    {% if campaign.status == 'info_requested' and (current_user_role == 'admin' or current_user_id == campaign.user_id) %}
+      <div style="background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #ea580c; border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start;">
+        <div style="font-size: 1.5rem; color: #ea580c; line-height: 1;">&#9888;</div>
+        <div style="flex: 1;">
+          <h4 style="margin: 0 0 6px 0; color: #c2410c; font-size: 1.05rem;">
+            Action Required: Additional Information Requested by Administrator
+          </h4>
+          <p style="margin: 0; color: #7c2d12; line-height: 1.5; font-size: 0.95rem;">
+            <strong>Reviewer Note:</strong> {{ campaign.admin_review_note or 'Please review your campaign details, description, or upload supporting verification documents to clarify your fundraising request.' }}
+          </p>
+          {% if current_user_id == campaign.user_id %}
+            <div style="margin-top: 1rem;">
+              <a href="{{ url_for('campaign.edit_campaign_view', campaign_id=campaign.id) }}" class="btn" style="background-color: #ea580c; color: #ffffff; border: none; font-weight: 700; padding: 0.55rem 1.25rem; border-radius: 6px; text-decoration: none; display: inline-block;">
+                Edit &amp; Resubmit Campaign &rarr;
+              </a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="grid-3" style="align-items: start;">
+      <div style="grid-column: span 2;">
+        <div class="card-static" style="padding: 0; overflow: hidden; margin-bottom: 1.5rem;">
+          {% if campaign.image_filename %}
+            <img src="{{ url_for('public.uploaded_file', folder='campaigns', filename=campaign.image_filename) }}" alt="{{ campaign.title }}" style="width: 100%; max-height: 360px; object-fit: cover;" />
+          {% else %}
+            <img src="{{ url_for('static', filename='images/campaign-placeholder.svg') }}" alt="{{ campaign.title }}" style="width: 100%; max-height: 320px; object-fit: cover;" />
+          {% endif %}
+          <div style="padding: 1.75rem;">
+            <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.75rem;">
+              <span class="category-pill" style="margin-bottom: 0;">{{ campaign.category }}</span>
+              <span class="badge badge-{{ campaign.status }}">{{ campaign.status | replace('_', ' ') | title }}</span>
+            </div>
+            <h1 style="font-size: 1.9rem; color: var(--navy); margin-bottom: 0.75rem;">{{ campaign.title }}</h1>
+            <p style="color: var(--text-muted); margin-bottom: 1.25rem;">
+              Organized by <strong>{{ campaign.creator_name }}</strong>
+              {% if campaign.location %} &middot; {{ campaign.location }}{% endif %}
+            </p>
+            <h3 style="font-size: 1.05rem; color: var(--navy); margin-bottom: 0.5rem;">About this Campaign</h3>
+            <p style="white-space: pre-line; color: var(--text);">{{ campaign.description }}</p>
+
+            {% if campaign.document_filename %}
+              <div style="margin-top: 1.5rem; padding-top: 1rem; border-top: 1px solid var(--border);">
+                <strong>Verification Document:</strong>
+                <a href="{{ url_for('public.uploaded_file', folder='documents', filename=campaign.document_filename) }}" target="_blank">
+                  View Supporting Document ({{ campaign.document_filename }})
+                </a>
+              </div>
+            {% endif %}
+          </div>
+        </div>
+
+        <div class="card-static">
+          <h3 class="card-title" style="margin-bottom: 1rem;">Recent Supporter Messages ({{ donations | length }})</h3>
+          {% for d in donations %}
+            <div style="padding: 0.85rem 0; border-bottom: 1px solid var(--border);">
+              <div style="display: flex; justify-content: space-between;">
+                <strong>{{ d.donor_name }}</strong>
+                <span style="color: var(--teal); font-weight: 700;">{{ d.amount | currency }}</span>
+              </div>
+              {% if d.message %}
+                <p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 0.25rem;">"{{ d.message }}"</p>
+              {% endif %}
+            </div>
+          {% else %}
+            <p class="card-text" style="margin-bottom: 0;">No donations yet. Be the first to support this campaign!</p>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div>
+        <div class="card-static" style="margin-bottom: 1.5rem;">
+          <div style="font-size: 1.75rem; font-weight: 800; color: var(--navy);">{{ campaign.raised_amount | currency }}</div>
+          <div style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+            raised of {{ campaign.goal_amount | currency }} goal
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" style="width: {{ progress_pct }}%;"></div>
+          </div>
+          <div class="progress-meta" style="margin-bottom: 1.25rem;">
+            <span><strong>{{ progress_pct }}%</strong> funded</span>
+            <span>{{ donations | length }} donors</span>
+          </div>
+
+          {% if campaign.status in ('approved', 'active') %}
+            <a href="{{ url_for('donation.donate', campaign_id=campaign.id) }}" class="btn btn-teal btn-lg" style="width: 100%;">
+              Donate Now (Simulated)
+            </a>
+          {% elif campaign.status == 'completed' %}
+            <div class="alert alert-success" style="margin-bottom: 0; text-align: center;">Goal Reached — Campaign Completed</div>
+          {% elif campaign.status == 'info_requested' and current_user_id == campaign.user_id %}
+            <a href="{{ url_for('campaign.edit_campaign_view', campaign_id=campaign.id) }}" class="btn btn-lg" style="width: 100%; background-color: #ea580c; color: #ffffff; border: none; font-weight: 700; text-align: center; display: block; text-decoration: none; padding: 0.75rem 1rem; border-radius: 6px;">
+              Edit &amp; Resubmit Campaign
+            </a>
+          {% else %}
+            <div class="alert alert-warning" style="margin-bottom: 0; text-align: center;">
+              {% if campaign.status == 'info_requested' %}Action Required: Additional Info Requested{% else %}Awaiting Admin Verification{% endif %}
+            </div>
+          {% endif %}
+        </div>
+
+        {% if current_user_role == 'admin' or current_user_id == campaign.user_id %}
+          <div class="card-static">
+            <h3 class="card-title">ML Fraud Risk Assessment</h3>
+            {% if campaign.risk_score is not none %}
+              {% set risk_cls = 'low' if campaign.risk_category == 'Low Risk' else ('medium' if campaign.risk_category == 'Medium Risk' else 'high') %}
+              <div style="display: flex; justify-content: space-between; align-items: center; margin: 0.75rem 0;">
+                <span class="badge badge-{{ risk_cls }}">{{ campaign.risk_category }}</span>
+                <strong style="font-size: 1.25rem; color: var(--navy);">{{ campaign.risk_score }} / 100</strong>
+              </div>
+              <ul style="padding-left: 1.1rem; font-size: 0.86rem; color: var(--text-muted);">
+                {% for r in reasons %}
+                  <li style="margin-bottom: 0.35rem;">{{ r }}</li>
+                {% endfor %}
+              </ul>
+            {% else %}
+              <p class="card-text">Pending ML analysis.</p>
+            {% endif %}
+            <p style="font-size: 0.76rem; color: var(--text-muted); margin-top: 0.75rem;">
+              Synthetic model indicator only; not proof of fraud.
+            </p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

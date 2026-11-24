@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard — FundForward{% endblock %}
+{% block head_extra %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+{% endblock %}
+
+{% block content %}
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2>Administrator Dashboard</h2>
+        <p>Platform-wide metrics, campaign approvals, and ML fraud monitoring overview.</p>
+      </div>
+      <div style="display: flex; gap: 0.6rem; flex-wrap: wrap;">
+        <a href="{{ url_for('admin.fraud_monitoring') }}" class="btn btn-primary btn-sm">Fraud Monitoring</a>
+        <a href="{{ url_for('admin.users') }}" class="btn btn-outline btn-sm">Users</a>
+        <a href="{{ url_for('admin.donations') }}" class="btn btn-outline btn-sm">Donations</a>
+      </div>
+    </div>
+
+    <div class="grid-4" style="margin-bottom: 1.5rem;">
+      <div class="kpi-card">
+        <div class="kpi-label">Total Users</div>
+        <div class="kpi-value">{{ stats.total_users }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Campaigns</div>
+        <div class="kpi-value">{{ stats.total_campaigns }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Donations</div>
+        <div class="kpi-value">{{ stats.total_donations }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Total Collected (Sim)</div>
+        <div class="kpi-value" style="color: var(--teal);">{{ stats.total_collected | currency }}</div>
+      </div>
+    </div>
+
+    <div class="grid-3" style="margin-bottom: 2rem;">
+      <div class="kpi-card">
+        <div class="kpi-label">Pending Approvals</div>
+        <div class="kpi-value" style="color: var(--warning);">{{ stats.pending_campaigns }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Approved / Active / Completed</div>
+        <div class="kpi-value" style="color: var(--success);">{{ stats.approved_campaigns }}</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Rejected Campaigns</div>
+        <div class="kpi-value" style="color: var(--danger);">{{ stats.rejected_campaigns }}</div>
+      </div>
+    </div>
+
+    <div class="grid-2" style="margin-bottom: 2.5rem;">
+      <div class="card-static">
+        <h3 class="card-title" style="margin-bottom: 1rem;">Campaign Risk Distribution</h3>
+        <canvas id="riskDistributionChart" height="220"></canvas>
+      </div>
+      <div class="card-static">
+        <h3 class="card-title" style="margin-bottom: 1rem;">Funding by Category</h3>
+        <canvas id="categoryFundingChart" height="220"></canvas>
+      </div>
+    </div>
+
+    <h3 style="margin-bottom: 1rem; color: var(--navy);">Pending Campaign Approvals ({{ pending_campaigns | length }})</h3>
+    <div class="table-wrap" style="margin-bottom: 2.5rem;">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Creator</th>
+            <th>Goal</th>
+            <th>ML Risk Score</th>
+            <th>Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in pending_campaigns %}
+            <tr>
+              <td><strong>{{ c.title }}</strong><br /><small style="color: var(--text-muted);">{{ c.category }}</small></td>
+              <td>{{ c.creator_name }}</td>
+              <td>{{ c.goal_amount | currency }}</td>
+              <td>
+                {% if c.risk_score is not none %}
+                  {% set risk_cls = 'low' if c.risk_category == 'Low Risk' else ('medium' if c.risk_category == 'Medium Risk' else 'high') %}
+                  <span class="badge badge-{{ risk_cls }}">{{ c.risk_category }} ({{ c.risk_score }}/100)</span>
+                {% else %}
+                  <span class="badge badge-medium">Not Analyzed</span>
+                {% endif %}
+              </td>
+              <td>
+                <a href="{{ url_for('admin.inspect_campaign', campaign_id=c.id) }}" class="btn btn-primary btn-sm">Inspect &amp; Review</a>
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" style="text-align: center; color: var(--text-muted);">No pending campaigns awaiting approval.</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <h3 style="margin-bottom: 1rem; color: var(--navy);">All Campaigns ({{ all_campaigns | length }})</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Raised / Goal</th>
+            <th>Status</th>
+            <th>Risk</th>
+            <th>Inspect</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for c in all_campaigns %}
+            <tr>
+              <td><strong>{{ c.title }}</strong></td>
+              <td>{{ c.category }}</td>
+              <td>{{ c.raised_amount | currency }} / {{ c.goal_amount | currency }}</td>
+              <td><span class="badge badge-{{ c.status }}">{{ c.status | replace('_', ' ') | title }}</span></td>
+              <td>
+                {% if c.risk_score is not none %}
+                  {% set risk_cls = 'low' if c.risk_category == 'Low Risk' else ('medium' if c.risk_category == 'Medium Risk' else 'high') %}
+                  <span class="badge badge-{{ risk_cls }}">{{ c.risk_score }} ({{ c.risk_category }})</span>
+                {% endif %}
+              </td>
+              <td><a href="{{ url_for('admin.inspect_campaign', campaign_id=c.id) }}" class="btn btn-outline btn-sm">Inspect</a></td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+<script>
+  window.RISK_DIST_DATA = {
+    low: {{ risk_dist.get('Low Risk', 0) }},
+    medium: {{ risk_dist.get('Medium Risk', 0) }},
+    high: {{ risk_dist.get('High Risk', 0) }}
+  };
+  window.CATEGORY_DATA = {
+    labels: [{% for row in category_breakdown %}"{{ row.category }}"{% if not loop.last %}, {% endif %}{% endfor %}],
+    totals: [{% for row in category_breakdown %}{{ row.total_raised }}{% if not loop.last %}, {% endif %}{% endfor %}]
+  };
+</script>
+<script src="{{ url_for('static', filename='js/admin_charts.js') }}"></script>
+{% endblock %}

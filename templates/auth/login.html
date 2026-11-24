@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Login — FundForward{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-card">
+    <h1 style="font-size: 1.6rem; color: var(--navy); margin-bottom: 0.35rem;">Welcome back</h1>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.5rem;">Log in to manage your campaigns and donations.</p>
+
+    <form method="POST" action="{{ url_for('auth.login') }}" data-loading="true">
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input type="email" id="email" name="email" class="form-control" value="{{ email or '' }}" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" required />
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" data-loading-text="Signing in...">Log In</button>
+    </form>
+
+    <div class="disclosure-box" style="margin-top: 1.25rem; font-size: 0.82rem;">
+      <strong>Demo Credentials:</strong><br />
+      Admin: <code>admin@fundforward.edu</code> / <code>Admin@123</code><br />
+      User: <code>priya@example.com</code> / <code>User@123</code>
+    </div>
+
+    <p style="text-align: center; margin-top: 1.25rem; font-size: 0.9rem; color: var(--text-muted);">
+      Don't have an account? <a href="{{ url_for('auth.register') }}">Create one</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

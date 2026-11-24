@@ -1,0 +1,126 @@
+{% extends "base.html" %}
+{% block title %}FundForward — Trusted Crowdfunding with ML Fraud Detection{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="container hero-grid">
+    <div>
+      <div class="hero-badge">ML-Assisted Campaign Verification</div>
+      <h1>Back ideas with confidence. Fund causes that matter.</h1>
+      <p>
+        FundForward combines transparent community crowdfunding with an integrated Scikit-learn fraud risk engine that screens every campaign before it goes live.
+      </p>
+      <div class="hero-actions">
+        <a href="{{ url_for('public.explore') }}" class="btn btn-primary btn-lg">Explore Campaigns</a>
+        <a href="{{ url_for('campaign.create_campaign_view') }}" class="btn btn-outline btn-lg">Launch a Campaign</a>
+      </div>
+      <div class="hero-stats">
+        <div>
+          <div class="stat-value">{{ stats.total_collected | currency }}</div>
+          <div class="stat-label">Simulated Funds Raised</div>
+        </div>
+        <div>
+          <div class="stat-value">{{ stats.approved_campaigns }}</div>
+          <div class="stat-label">Verified Campaigns</div>
+        </div>
+        <div>
+          <div class="stat-value">{{ stats.total_donations }}</div>
+          <div class="stat-label">Supporter Contributions</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <img src="{{ url_for('static', filename='images/hero-illustration.svg') }}" alt="FundForward Platform Preview" style="width: 100%; border-radius: 16px;" />
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2>Featured Campaigns</h2>
+        <p>Verified community initiatives currently raising support.</p>
+      </div>
+      <a href="{{ url_for('public.explore') }}" class="btn btn-outline">View All Campaigns</a>
+    </div>
+
+    <div class="grid-3">
+      {% for c in featured_campaigns %}
+        {% set pct = [100, ((c.raised_amount / c.goal_amount) * 100) | round(1)] | min %}
+        <div class="card">
+          {% if c.image_filename %}
+            <img class="card-img" src="{{ url_for('public.uploaded_file', folder='campaigns', filename=c.image_filename) }}" alt="{{ c.title }}" />
+          {% else %}
+            <img class="card-img" src="{{ url_for('static', filename='images/campaign-placeholder.svg') }}" alt="{{ c.title }}" />
+          {% endif %}
+          <div class="card-body">
+            <span class="category-pill">{{ c.category }}</span>
+            <h3 class="card-title">{{ c.title }}</h3>
+            <p class="card-text">{{ c.short_summary }}</p>
+            <div class="progress-track">
+              <div class="progress-fill" style="width: {{ pct }}%;"></div>
+            </div>
+            <div class="progress-meta">
+              <span><strong>{{ c.raised_amount | currency }}</strong> raised</span>
+              <span>{{ pct }}% of {{ c.goal_amount | currency }}</span>
+            </div>
+            <div style="margin-top: 1rem;">
+              <a href="{{ url_for('public.campaign_detail', campaign_id=c.id) }}" class="btn btn-primary btn-sm" style="width: 100%;">View Campaign</a>
+            </div>
+          </div>
+        </div>
+      {% else %}
+        <p>No active campaigns yet. Be the first to launch one!</p>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section section-subtle">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2>Browse by Category</h2>
+        <p>Discover causes across healthcare, education, technology, and sustainability.</p>
+      </div>
+    </div>
+    <div class="grid-4">
+      {% for cat in categories %}
+        <a href="{{ url_for('public.explore', category=cat) }}" class="card-static" style="display: block; color: var(--navy); font-weight: 600;">
+          {{ cat }} &rarr;
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container">
+    <div class="section-header">
+      <div>
+        <h2>How FundForward Protects Donors</h2>
+        <p>Every campaign passes through automated ML screening and human administrator review.</p>
+      </div>
+      <a href="{{ url_for('public.how_it_works') }}" class="btn btn-outline">Learn More</a>
+    </div>
+    <div class="grid-3">
+      <div class="card-static">
+        <span class="category-pill">Step 1</span>
+        <h3 class="card-title">Structured Submission</h3>
+        <p class="card-text" style="margin-bottom: 0;">Creators submit goals, narratives, beneficiary info, and supporting verification documents.</p>
+      </div>
+      <div class="card-static">
+        <span class="category-pill">Step 2</span>
+        <h3 class="card-title">ML Risk Scoring (0–100)</h3>
+        <p class="card-text" style="margin-bottom: 0;">Our Random Forest classifier evaluates 9 campaign and account features to assign Low, Medium, or High risk.</p>
+      </div>
+      <div class="card-static">
+        <span class="category-pill">Step 3</span>
+        <h3 class="card-title">Admin Verification</h3>
+        <p class="card-text" style="margin-bottom: 0;">Administrators inspect flagged campaigns and explainable reasons before approving or requesting more info.</p>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

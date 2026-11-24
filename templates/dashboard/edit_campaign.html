@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}Edit & Resubmit Campaign — {{ campaign.title }}{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-card form-card-wide">
+    <div style="background: #fff7ed; border: 1px solid #fed7aa; border-left: 5px solid #ea580c; border-radius: 8px; padding: 1.25rem 1.5rem; margin-bottom: 1.5rem; display: flex; gap: 1rem; align-items: flex-start;">
+      <div style="font-size: 1.5rem; color: #ea580c; line-height: 1;">&#9888;</div>
+      <div style="flex: 1;">
+        <h4 style="margin: 0 0 6px 0; color: #c2410c; font-size: 1.05rem;">
+          Action Required: Additional Information Requested
+        </h4>
+        <p style="margin: 0; color: #7c2d12; line-height: 1.5; font-size: 0.95rem;">
+          <strong>Reviewer Note:</strong> {{ campaign.admin_review_note or 'Please update your campaign description or upload supporting documentation to clarify your fundraising request.' }}
+        </p>
+        <small style="display: block; margin-top: 6px; color: #9a3412;">
+          Resubmitting will reset the status to pending and rerun our ML fraud risk analysis.
+        </small>
+      </div>
+    </div>
+
+    <h1 style="font-size: 1.7rem; color: var(--navy); margin-bottom: 0.35rem;">Edit &amp; Resubmit Campaign</h1>
+    <p style="color: var(--text-muted); margin-bottom: 1.5rem;">
+      Update your campaign details and upload verification documents for administrator review.
+    </p>
+
+    <form method="POST" action="{{ url_for('campaign.edit_campaign_view', campaign_id=campaign.id) }}" enctype="multipart/form-data" data-loading="true">
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="title">Campaign Title *</label>
+          <input type="text" id="title" name="title" class="form-control" value="{{ form_data.get('title', campaign.title) }}" required minlength="5" maxlength="140" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="category">Category *</label>
+          <select id="category" name="category" class="form-control" required>
+            <option value="">Select Category...</option>
+            {% for cat in categories %}
+              <option value="{{ cat }}" {% if form_data.get('category', campaign.category) == cat %}selected{% endif %}>{{ cat }}</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="short_summary">Short Summary *</label>
+        <input type="text" id="short_summary" name="short_summary" class="form-control" value="{{ form_data.get('short_summary', campaign.short_summary) }}" required minlength="10" maxlength="250" placeholder="One-sentence summary of your goal..." />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Detailed Campaign Description *</label>
+        <textarea id="description" name="description" class="form-control" rows="5" required minlength="30" placeholder="Explain who benefits, how funds will be used, and timeline...">{{ form_data.get('description', campaign.description) }}</textarea>
+        <div class="form-hint">Detailed, transparent descriptions improve donor trust and lower ML risk scores.</div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="goal_amount">Fundraising Goal (USD) *</label>
+          <input type="number" id="goal_amount" name="goal_amount" class="form-control" value="{{ form_data.get('goal_amount', campaign.goal_amount)|int if form_data.get('goal_amount', campaign.goal_amount) else '' }}" min="50" max="1000000" step="1" required />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="duration_days">Duration (Days) *</label>
+          <input type="number" id="duration_days" name="duration_days" class="form-control" value="{{ form_data.get('duration_days', campaign.duration_days) }}" min="5" max="180" required />
+        </div>
+      </div>
+
+      <div class="grid-3">
+        <div class="form-group">
+          <label class="form-label" for="location">Location</label>
+          <input type="text" id="location" name="location" class="form-control" value="{{ form_data.get('location', campaign.location or '') }}" placeholder="City, State" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="beneficiary_name">Beneficiary / Organization</label>
+          <input type="text" id="beneficiary_name" name="beneficiary_name" class="form-control" value="{{ form_data.get('beneficiary_name', campaign.beneficiary_name or '') }}" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="contact_phone">Contact Phone</label>
+          <input type="text" id="contact_phone" name="contact_phone" class="form-control" value="{{ form_data.get('contact_phone', campaign.contact_phone or '') }}" />
+        </div>
+      </div>
+
+      <div class="grid-2">
+        <div class="form-group">
+          <label class="form-label" for="image">Campaign Cover Image (Optional Replacement)</label>
+          {% if campaign.image_filename %}
+            <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.35rem;">
+              Current image: <strong>{{ campaign.image_filename }}</strong> (retained if no new file selected)
+            </div>
+          {% endif %}
+          <input type="file" id="image" name="image" class="form-control" accept=".png,.jpg,.jpeg,.webp" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="document">Supporting Document (Upload Verification Document)</label>
+          {% if campaign.document_filename %}
+            <div style="font-size: 0.85rem; color: #047857; margin-bottom: 0.35rem;">
+              Current document: <strong>{{ campaign.document_filename }}</strong> (retained if no new file selected)
+            </div>
+          {% endif %}
+          <input type="file" id="document" name="document" class="form-control" accept=".pdf,.png,.jpg,.jpeg,.doc,.docx,.txt" />
+          <div class="form-hint">Max 5 MB. PDF, DOCX, ID proof, medical bills, or official invoices.</div>
+        </div>
+      </div>
+
+      <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+        <a href="{{ url_for('public.campaign_detail', campaign_id=campaign.id) }}" class="btn btn-outline" style="flex: 1; text-align: center;">Cancel</a>
+        <button type="submit" class="btn btn-lg" style="flex: 2; background-color: #ea580c; color: #ffffff; border: none; font-weight: 700;" data-loading-text="Updating &amp; Running ML Analysis...">
+          Save &amp; Resubmit Campaign
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

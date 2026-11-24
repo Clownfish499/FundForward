@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}Register — FundForward{% endblock %}
+
+{% block content %}
+<div class="container">
+  <div class="form-card">
+    <h1 style="font-size: 1.6rem; color: var(--navy); margin-bottom: 0.35rem;">Create your account</h1>
+    <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 1.5rem;">Start a fundraising campaign or support verified initiatives.</p>
+
+    <form method="POST" action="{{ url_for('auth.register') }}" data-loading="true">
+      <div class="form-group">
+        <label class="form-label" for="full_name">Full Name</label>
+        <input type="text" id="full_name" name="full_name" class="form-control" value="{{ full_name or '' }}" required minlength="2" />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="email">Email Address</label>
+        <input type="email" id="email" name="email" class="form-control" value="{{ email or '' }}" required />
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <input type="password" id="password" name="password" class="form-control" required minlength="6" />
+        <div class="form-hint">Minimum 6 characters.</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label" for="confirm_password">Confirm Password</label>
+        <input type="password" id="confirm_password" name="confirm_password" class="form-control" required minlength="6" />
+      </div>
+      <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;" data-loading-text="Creating account...">Create Account</button>
+    </form>
+
+    <p style="text-align: center; margin-top: 1.25rem; font-size: 0.9rem; color: var(--text-muted);">
+      Already registered? <a href="{{ url_for('auth.login') }}">Log in</a>
+    </p>
+  </div>
+</div>
+{% endblock %}
